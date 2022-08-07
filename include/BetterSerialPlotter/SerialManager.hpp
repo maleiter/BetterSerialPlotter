@@ -95,4 +95,7 @@ private:
                                    256000,
                                    3000000};
 
+    
+};
+
 } // namespace bsp

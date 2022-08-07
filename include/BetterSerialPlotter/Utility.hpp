@@ -39,7 +39,7 @@ struct ScrollingData {
                return Data.back();
           }
           else{
-               return Data[Offset != 0 ? (Offset-1) : MaxSize];
+               return Data[Offset != 0 ? (Offset-1) : MaxSize - 1];
           }
      }
 

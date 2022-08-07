@@ -67,6 +67,7 @@ void BSP::update(){
     if (ImGui::Button("Load Config")) deserialize();
     if (plot_monitor.paused && !was_paused){
         for (auto &plot : plot_monitor.all_plots){
+            all_data_paused = all_data;
             plot.update_paused_data();
         }
         plot_monitor.paused_time = time;
@@ -129,8 +130,10 @@ void BSP::append_all_data(std::vector<float> curr_data){
     // std::cout << "end append\n";
 }
 
-std::optional<std::reference_wrapper<ScrollingData>> BSP::get_data(char identifier){
-    for (auto &data : all_data){
+std::optional<std::reference_wrapper<ScrollingData>> BSP::get_data(char identifier, bool paused){
+
+    auto& dataset = paused ? all_data_paused : all_data;
+    for (auto &data : dataset){
         if (data.identifier == identifier){
             return data;
         }

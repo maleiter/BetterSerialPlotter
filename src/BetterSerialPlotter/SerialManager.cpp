@@ -122,8 +122,13 @@ void SerialManager::reset_read(){
     std::lock_guard<std::mutex> lock(mtx);
     curr_line_buff.clear();                              
     gui->PrintBuffer.clear();
-    gui->all_data.clear();       
-    gui->mutexed_all_data.clear();
+
+    for (auto& data : gui->all_data) {
+        data.Data.clear();
+        data.Offset = 0;
+    }
+       
+    gui->mutexed_all_data = gui->all_data;
     
     read_once = false;
 }

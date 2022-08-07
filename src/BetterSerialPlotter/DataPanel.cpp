@@ -13,7 +13,7 @@ void DataPanel::render(){
     ImGui::Text("Incoming Data");
     ImGui::Separator();
     if (ImGui::BeginTable("data_table", 2, ImGuiTableFlags_Resizable)){
-        if (!gui->serial_manager.baud_status) {
+        if (gui->serial_manager.baud_status) {
             for (int i = 0; i < gui->all_data.size(); ++i) {
                 if (!gui->all_data[i].Data.empty()) {
                     ImGui::TableNextRow();

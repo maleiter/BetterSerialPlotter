@@ -329,7 +329,8 @@ bool Plot::has_identifier(char identifier) const{
 }
 
 std::optional<std::reference_wrapper<ScrollingData>> Plot::get_data(char identifier){
-    return plot_monitor->gui->get_data(identifier);
+ 
+    return plot_monitor->gui->get_data(identifier, plot_monitor->paused);
 }
 
 void Plot::update_paused_data(){

@@ -50,15 +50,20 @@ void PlotMonitor::export_data(){
     std::string filepath;
     auto result = mahi::gui::save_dialog(filepath, {{"CSV", "csv"}}, "", "data.csv");
     if (result == mahi::gui::DialogResult::DialogOkay){
-        auto num_datas = gui->all_data.size();
+
+
+        auto& datasrc = paused ? gui->all_data_paused: gui->all_data;
+
+       // all_plot_paused_data
+        auto num_datas = datasrc.size();
 
         if (num_datas == 0){
             std::cout << "no data to export";
             return;
         }
 
-        auto num_samples = gui->all_data[0].Data.size();
-        auto offset = gui->all_data[0].Offset;
+        auto largest_data_set = std::max_element(datasrc.cbegin(), datasrc.cend(), [](auto const& left, auto const& right) {return left.Data.size() < right.Data.size(); });
+        auto max_samples = largest_data_set->Data.size();
 
         mahi::util::print("Path: {}",filepath);
         
@@ -69,17 +74,20 @@ void PlotMonitor::export_data(){
 
         // add the names as headers for the csv file
         headers.push_back("Program Time [s]");
-        for (const auto &data : gui->all_data){
+        for (const auto &data : datasrc){
             headers.push_back(gui->get_name(data.identifier));
         }
         
         // // add all of the data points
-        for (auto i = 0; i < num_samples; i++){
+        for (auto i = 0; i < max_samples; i++){
             std::vector<double> row;
             row.reserve(num_datas+1);
-            row.push_back(gui->all_data[0].Data[(i + offset)%num_samples].x);
-            for (const auto &data : gui->all_data){           
-                row.push_back(data.Data[(i + offset)%num_samples].y);
+            row.push_back(datasrc[0].Data[(i + datasrc[0].Offset)% datasrc[0].Data.size()].x);
+            for (const auto &data : datasrc){
+                if (i < data.Data.size())
+                    row.push_back(data.Data[(i + data.Offset) % data.Data.size()].y);
+                else
+                    row.push_back(NAN);
             }
             all_rows.push_back(row);
         }

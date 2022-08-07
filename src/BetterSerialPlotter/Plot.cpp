@@ -61,7 +61,7 @@ void Plot::make_plot(float time, int plot_num){
             ImPlot::SetNextPlotLimitsX(x_min, x_max, ImGuiCond_Always);
         }
         // set y_axis limits if autoscaled
-        if (autoscale && get_data(y_axis.begin()->first) != std::nullopt){
+        if (autoscale && (y_axis.begin() != y_axis.end()) && get_data(y_axis.begin()->first) != std::nullopt){
             // vectors which contain min and max for y axis 0 and y axis 1
             std::vector<float> y_min = {0.0f,0.0f};
             std::vector<float> y_max = {1.0f,1.0f};
@@ -248,19 +248,40 @@ void Plot::plot_data(){
         // get the correct set of data based on what we are currently doing
         auto &curr_data = plot_monitor->paused ? all_plot_paused_data[i] : get_data(all_plot_data[i])->get();
         auto &curr_identifier = plot_monitor->paused ? all_plot_paused_data[i].identifier : all_plot_data[i];
-        float* curr_x_data; // would prefer this to be a reference, but have to assign immediately, so can't
+        float* curr_x_data = nullptr; // would prefer this to be a reference, but have to assign immediately, so can't
         if (plot_monitor->paused){
-            curr_x_data = (other_x_axis) ? &paused_x_axis.Data[0].y : &all_plot_paused_data[i].Data[0].x;
+            if (other_x_axis) {
+                if (paused_x_axis.Data.size() > 0) {
+                    curr_x_data = &paused_x_axis.Data[0].y;
+                }
+            }
+            else
+            {
+                if (all_plot_paused_data[i].Data.size() > 0) {
+                    curr_x_data = &all_plot_paused_data[i].Data[0].x;
+                }
+            }
         }
         else{
-            curr_x_data = (other_x_axis) ? &get_data(x_axis)->get().Data[0].y : &curr_data.Data[0].x;
+            if (other_x_axis) {
+                if ( get_data(x_axis)->get().Data.size() > 0) {
+                    curr_x_data = &get_data(x_axis)->get().Data[0].y;
+                }
+            }
+            else {
+                if (curr_data.Data.size() > 0) {
+                    curr_x_data = &curr_data.Data[0].x;
+                }
+            }
         }
 
         ImPlot::PushStyleColor(ImPlotCol_Line,plot_monitor->gui->get_color(curr_data.identifier)); 
         char id[64];
         sprintf(id,"%s###%i",plot_monitor->gui->get_name(curr_data.identifier).c_str(),i);
         ImPlot::SetPlotYAxis(y_axis[curr_identifier]);
-        ImPlot::PlotLine(id, curr_x_data, &curr_data.Data[0].y, curr_data.Data.size(), curr_data.Offset, 2 * sizeof(float));  
+        if (curr_x_data != nullptr) {
+            ImPlot::PlotLine(id, curr_x_data, &curr_data.Data[0].y, curr_data.Data.size(), curr_data.Offset, 2 * sizeof(float));
+        }
         ImPlot::PopStyleColor();   
     }   
     
